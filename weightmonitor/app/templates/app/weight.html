@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weight Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="weightChart" width="800" height="400"></canvas>
+
+    <script>
+        function fetchData() {
+            // Make an AJAX request to fetch the latest weight data
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/weight/api/', true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // Parse the response data
+                    var weightData = JSON.parse(xhr.responseText);
+
+                    // Extract weight values and timestamps from the data
+                    var weightValues = weightData.map(function (item) {
+                        return item.value;
+                    });
+
+                    var timestamps = weightData.map(function (item) {
+                        return item.timestamp;
+                    });
+
+                    // Update the chart data
+                    chart.data.labels = timestamps;
+                    chart.data.datasets[0].data = weightValues;
+                    chart.update();
+                }
+            };
+            xhr.send();
+        }
+
+        // Create the initial chart
+        var ctx = document.getElementById('weightChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Weight',
+                    data: [],
+                    borderColor: 'blue',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Timestamp'
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Weight'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Fetch data initially
+        fetchData();
+
+        // Periodically fetch data every 5 seconds
+        setInterval(fetchData, 5000);
+    </script>
+</body>
+</html>
